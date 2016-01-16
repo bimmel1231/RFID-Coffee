@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+
 import subprocess
 import datetime
 from Adafruit_CharLCDPlate import Adafruit_CharLCDPlate
@@ -48,6 +50,7 @@ class Command(object):
             thread.join()
         return self.status, self.output, self.error
 
+
 #Communication with Adafruit PN532
 def rfid():
     res = subprocess.Popen("nfc-poll",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -96,9 +99,11 @@ def diff_balance(ID, filename, money):
         data_new = data.append(frame, ignore_index=True)
         data_new.to_csv(filename, sep='\t', index=False)  
 
-#Initialize Coffee
-coffee_price = -0.25 # Coffee price in EUR    
-logfile = "coffee_log2.txt"
+#Initialize Coffee logger
+coffee_price = -0.25 # Coffee price in EUR
+path = '/home/pi/RFID-Coffee' #path to directory    
+log = "coffee_log_140116.txt" #logfile
+logfile = os.path.join(path, log)
 diffsave = "coffee_diff_savelog.txt"
 
 #Initialize LCD
@@ -216,14 +221,11 @@ def main():
 		sleep(1)
 		lcd.clear()
 		lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-		sleep(1.5)
-		lcd.clear()
-		lcd.message("Press UP to\n continue")
-                while (lcd.buttonPressed(lcd.UP) == 0):
+                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
 		    pass
 		else:
-	 	    lcd.clear()
 		    keep_looping = True
+                    LCD_QUEUE.put(MENU_LIST[0], True)
             else:
 		lcd.clear()
 		lcd.message('No transaction')
@@ -249,14 +251,12 @@ def main():
                 sleep(1)
                 lcd.clear()
                 lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                while (lcd.buttonPressed(lcd.UP) == 0):
+                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
                     pass
                 else:
-                    lcd.clear()
                     keep_looping = True
+                    LCD_QUEUE.put(MENU_LIST[1], True)
+
             else:
                 lcd.clear()
                 lcd.message('No transaction')
@@ -283,14 +283,12 @@ def main():
                 sleep(1)
                 lcd.clear()
                 lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                while (lcd.buttonPressed(lcd.UP) == 0):
+                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
                     pass
                 else:
-                    lcd.clear()
                     keep_looping = True
+                    LCD_QUEUE.put(MENU_LIST[2], True)
+
             else:
                 lcd.clear()
                 lcd.message('No transaction')
@@ -316,14 +314,12 @@ def main():
                 sleep(1)
                 lcd.clear()
                 lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                while (lcd.buttonPressed(lcd.UP) == 0):
+                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
                     pass
                 else:
-                    lcd.clear()
                     keep_looping = True
+                    LCD_QUEUE.put(MENU_LIST[3], True)
+
             else:
                 lcd.clear()
                 lcd.message('No transaction')
@@ -349,14 +345,12 @@ def main():
                 sleep(1)
                 lcd.clear()
                 lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                while (lcd.buttonPressed(lcd.UP) == 0):
+                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
                     pass
                 else:
-                    lcd.clear()
                     keep_looping = True
+                    LCD_QUEUE.put(MENU_LIST[4], True)
+
             else:
                 lcd.clear()
                 lcd.message('No transaction')
@@ -382,14 +376,12 @@ def main():
                 sleep(1)
                 lcd.clear()
                 lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                while (lcd.buttonPressed(lcd.UP) == 0):
+                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
                     pass
                 else:
-                    lcd.clear()
                     keep_looping = True
+                    LCD_QUEUE.put(MENU_LIST[5], True)
+
             else:
                 lcd.clear()
                 lcd.message('No transaction')
@@ -415,14 +407,12 @@ def main():
                 sleep(1)
                 lcd.clear()
                 lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                while (lcd.buttonPressed(lcd.UP) == 0):
+                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
                     pass
                 else:
-                    lcd.clear()
                     keep_looping = True
+                    LCD_QUEUE.put(MENU_LIST[6], True)
+
             else:
                 lcd.clear()
                 lcd.message('No transaction')
