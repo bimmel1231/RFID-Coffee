@@ -99,6 +99,32 @@ def diff_balance(ID, filename, money):
         data_new = data.append(frame, ignore_index=True)
         data_new.to_csv(filename, sep='\t', index=False)  
 
+def lcdmenu(poll_time, money): #poll_time in s, money in EUR
+    lcd.clear()
+    lcd.message("Swipe RFID tag\n")
+    lcd.message("ID:waiting")
+    lcd.set_cursor(3,6)
+    UID = rfid_ID(Command("nfc-poll").run(timeout=poll_time))
+    if (UID != False):
+         lcd.set_cursor(3,6)
+         lcd.message(UID)
+         sleep(1)
+         charge(UID, logfile, money)
+         lcd.clear()
+         lcd.message("Transaction\ncomplete!")
+         sleep(1)
+         lcd.clear()
+         lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
+         sleep(2)
+         pass
+          
+    else:
+         lcd.clear()
+         lcd.message('No transaction')
+         sleep(1.5)
+         pass
+         
+    
 #Initialize Coffee logger
 coffee_price = -0.25 # Coffee price in EUR
 path = '/home/pi/RFID-Coffee' #path to directory    
@@ -135,11 +161,6 @@ def update_lcd(q):
 #Debounce buttons
   
 def read_buttons():  
-   buttons = (lcd.is_pressed(LCD.UP),
-	      lcd.is_pressed(LCD.DOWN),
-              lcd.is_pressed(LCD.LEFT),
-	      lcd.is_pressed(LCD.RIGHT) )
- 
    if (lcd.is_pressed(LCD.UP)    != 0 or\
        lcd.is_pressed(LCD.DOWN)  != 0 or\
        lcd.is_pressed(LCD.LEFT)  != 0 or\
@@ -152,6 +173,16 @@ def read_buttons():
       return buttons
 
 # Main program
+
+MENU_LIST = [
+      '1. Pay Coffee \n             ',
+      '2. Load Money \n +1.00 \x01  ', #\x0 to interpret created char EUR-symbol as hex
+      '3. Load Money \n +2.00 \x01  ',
+      '4. Load Money \n +5.00 \x01  ',
+      '5. Load Money \n +10.00 \x01  ',
+      '6. Load Money \n +20.00 \x01  ',
+      '7. Load Money \n +50.00 \x01 ']
+
 def main():  
     # Setup AdaFruit LCD Plate    
    #lcd.begin(16,2)  
@@ -167,14 +198,14 @@ def main():
    sleep(2)
    lcd.clear()  
 
-   MENU_LIST = [  
-      '1. Pay Coffee \n             ',  
-      '2. Load Money \n +1.00 \x01  ', #\x0 to interpret created char EUR-symbol as hex   
-      '3. Load Money \n +2.00 \x01  ',  
-      '4. Load Money \n +5.00 \x01  ',  
-      '5. Load Money \n +10.00 \x01  ',  
-      '6. Load Money \n +20.00 \x01  ',  
-      '7. Load Money \n +50.00 \x01 ']  
+#   MENU_LIST = [  
+#      '1. Pay Coffee \n             ',  
+#      '2. Load Money \n +1.00 \x01  ', #\x0 to interpret created char EUR-symbol as hex   
+#      '3. Load Money \n +2.00 \x01  ',  
+#      '4. Load Money \n +5.00 \x01  ',  
+#      '5. Load Money \n +10.00 \x01  ',  
+#      '6. Load Money \n +20.00 \x01  ',  
+#      '7. Load Money \n +50.00 \x01 ']  
   
    item = 0  
    lcd.clear()
@@ -204,222 +235,47 @@ def main():
          keep_looping = False  
   
          # Take action  
-         if(  item == 0):  
+         if(item == 0): 
             # 1. Pay Coffee  
-            lcd.clear()
-	    lcd.message("Swipe RFID tag\n")
-	    lcd.message("ID:waiting")
-	    lcd.set_cursor(3,6)
-            UID = rfid_ID(Command("nfc-poll").run(timeout=5))
-            if (UID != False):
-                lcd.set_cursor(3,6)
-		lcd.message(UID)
-		sleep(1)
-	        charge(UID, logfile, coffee_price)
-		lcd.clear()
-		lcd.message("Transaction\ncomplete!")
-		sleep(1)
-		lcd.clear()
-		lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
-		    pass
-		else:
-		    keep_looping = True
-                    LCD_QUEUE.put(MENU_LIST[0], True)
-            else:
-		lcd.clear()
-		lcd.message('No transaction')
-		sleep(1.5)
-		lcd.clear()
-                lcd.message("Press UP to\n continue")
-                keep_looping = True    
-	  	
+            lcdmenu(10, -0.25)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)
+
          elif(item == 1):  
             # 2. Load 1.00 EUR
-            lcd.clear()
-            lcd.message("Swipe RFID tag\n")
-            lcd.message("ID:waiting")
-            lcd.set_cursor(3,6)
-            UID = rfid_ID(Command("nfc-poll").run(timeout=5))
-            if (UID != False):
-                lcd.set_cursor(3,6)
-                lcd.message(UID)
-                sleep(1)
-                charge(UID, logfile, "1.00")
-                lcd.clear()
-                lcd.message("Transaction\ncomplete!")
-                sleep(1)
-                lcd.clear()
-                lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
-                    pass
-                else:
-                    keep_looping = True
-                    LCD_QUEUE.put(MENU_LIST[1], True)
-
-            else:
-                lcd.clear()
-                lcd.message('No transaction')
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                keep_looping = True
-
- 
+            lcdmenu(10, 1.00)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)
+            
          elif(item == 2):  
-            # 3. Load 2.00 EUR  
-            lcd.clear()
-            lcd.message("Swipe RFID tag\n")
-            lcd.message("ID:waiting")
-            lcd.set_cursor(3,6)
-            UID = rfid_ID(Command("nfc-poll").run(timeout=5))
-            if (UID != False):
-                lcd.set_cursor(3,6)
-                lcd.message(UID)
-                sleep(1)
-                charge(UID, logfile, "2.00")
-                lcd.clear()
-                lcd.message("Transaction\ncomplete!")
-                sleep(1)
-                lcd.clear()
-                lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
-                    pass
-                else:
-                    keep_looping = True
-                    LCD_QUEUE.put(MENU_LIST[2], True)
-
-            else:
-                lcd.clear()
-                lcd.message('No transaction')
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                keep_looping = True
-  
+            # 3. Load 2.00 EUR
+            lcdmenu(10, 2.00)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)  
+              
          elif(item == 3):  
             # 4. Load 5.00 EUR 
-            lcd.clear()
-            lcd.message("Swipe RFID tag\n")
-            lcd.message("ID:waiting")
-            lcd.set_cursor(3,6)
-            UID = rfid_ID(Command("nfc-poll").run(timeout=5))
-            if (UID != False):
-                lcd.set_cursor(3,6)
-                lcd.message(UID)
-                sleep(1)
-                charge(UID, logfile, "5.00")
-                lcd.clear()
-                lcd.message("Transaction\ncomplete!")
-                sleep(1)
-                lcd.clear()
-                lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
-                    pass
-                else:
-                    keep_looping = True
-                    LCD_QUEUE.put(MENU_LIST[3], True)
-
-            else:
-                lcd.clear()
-                lcd.message('No transaction')
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                keep_looping = True
+            lcdmenu(10, 5.00)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)
   
          elif(item == 4):  
             # 5. Load 10.00 EUR  
-            lcd.clear()
-            lcd.message("Swipe RFID tag\n")
-            lcd.message("ID:waiting")
-            lcd.set_cursor(3,6)
-            UID = rfid_ID(Command("nfc-poll").run(timeout=5))
-            if (UID != False):
-                lcd.set_cursor(3,6)
-                lcd.message(UID)
-                sleep(1)
-                charge(UID, logfile, "10.00")
-                lcd.clear()
-                lcd.message("Transaction\ncomplete!")
-                sleep(1)
-                lcd.clear()
-                lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
-                    pass
-                else:
-                    keep_looping = True
-                    LCD_QUEUE.put(MENU_LIST[4], True)
-
-            else:
-                lcd.clear()
-                lcd.message('No transaction')
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                keep_looping = True
+            lcdmenu(10, 10.00)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)
   
          elif(item == 5):  
             # 6. Load 20.00 EUR  
-            lcd.clear()
-            lcd.message("Swipe RFID tag\n")
-            lcd.message("ID:waiting")
-            lcd.set_cursor(3,6)
-            UID = rfid_ID(Command("nfc-poll").run(timeout=5))
-            if (UID != False):
-                lcd.set_cursor(3,6)
-                lcd.message(UID)
-                sleep(1)
-                charge(UID, logfile, "20.00")
-                lcd.clear()
-                lcd.message("Transaction\ncomplete!")
-                sleep(1)
-                lcd.clear()
-                lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
-                    pass
-                else:
-                    keep_looping = True
-                    LCD_QUEUE.put(MENU_LIST[5], True)
-
-            else:
-                lcd.clear()
-                lcd.message('No transaction')
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                keep_looping = True
+            lcdmenu(10, 20.00)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)
 
          elif(item == 6):
             # 7. Load 50.00 EUR
-            lcd.clear()
-            lcd.message("Swipe RFID tag\n")
-            lcd.message("ID:waiting")
-            lcd.set_cursor(3,6)
-            UID = rfid_ID(Command("nfc-poll").run(timeout=5))
-            if (UID != False):
-                lcd.set_cursor(3,6)
-                lcd.message(UID)
-                sleep(1)
-                charge(UID, logfile, "50.00")
-                lcd.clear()
-                lcd.message("Transaction\ncomplete!")
-                sleep(1)
-                lcd.clear()
-                lcd.message("New Balance:\n" + str(acc_balance(UID, logfile)) + " \x01" )
-                while sleep(2): #(lcd.buttonPressed(lcd.UP) == 0):
-                    pass
-                else:
-                    keep_looping = True
-                    LCD_QUEUE.put(MENU_LIST[6], True)
-
-            else:
-                lcd.clear()
-                lcd.message('No transaction')
-                sleep(1.5)
-                lcd.clear()
-                lcd.message("Press UP to\n continue")
-                keep_looping = True
+            lcdmenu(10, 50.00)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)
 
   
       else:
