@@ -2,7 +2,7 @@
 
 import subprocess
 import datetime
-from Adafruit_CharLCDPlate import Adafruit_CharLCDPlate
+import Adafruit_CharLCD as LCD
 from Queue 		import Queue
 import threading, shlex, traceback
 from time 		import sleep
@@ -108,9 +108,9 @@ diffsave = "coffee_diff_savelog.txt"
 
 #Initialize LCD
 
-lcd	       = Adafruit_CharLCDPlate()
+lcd	       = LCD.Adafruit_CharLCDPlate()
 LCD_QUEUE      = Queue()
-lcd.createChar(1, [3, 4, 30, 8, 30, 9, 7, 0])
+lcd.create_char(1, [3, 4, 30, 8, 30, 9, 7, 0])
 
 
 # ----------------------------  
@@ -126,7 +126,7 @@ def update_lcd(q):
       while not q.empty():  
          q.task_done()  
          msg = q.get()  
-      lcd.setCursor(0,0)  
+      lcd.set_cursor(0,0)  
       lcd.message(msg)
       sleep(0.2)  
       q.task_done()  
@@ -135,26 +135,26 @@ def update_lcd(q):
 #Debounce buttons
   
 def read_buttons():  
-   buttons = (lcd.buttonPressed(lcd.UP),
-	      lcd.buttonPressed(lcd.DOWN),
-              lcd.buttonPressed(lcd.LEFT),
-	      lcd.buttonPressed(lcd.RIGHT) )
+   buttons = (lcd.is_pressed(LCD.UP),
+	      lcd.is_pressed(LCD.DOWN),
+              lcd.is_pressed(LCD.LEFT),
+	      lcd.is_pressed(LCD.RIGHT) )
  
-   if (lcd.buttonPressed(lcd.UP)    != 0 or\
-       lcd.buttonPressed(lcd.DOWN)  != 0 or\
-       lcd.buttonPressed(lcd.LEFT)  != 0 or\
-       lcd.buttonPressed(lcd.RIGHT) != 0 ):  
-      while (lcd.buttonPressed(lcd.UP)    != 0 or\
-             lcd.buttonPressed(lcd.DOWN)  != 0 or\
-             lcd.buttonPressed(lcd.LEFT)  != 0 or\
-             lcd.buttonPressed(lcd.RIGHT) != 0 ):
+   if (lcd.is_pressed(LCD.UP)    != 0 or\
+       lcd.is_pressed(LCD.DOWN)  != 0 or\
+       lcd.is_pressed(LCD.LEFT)  != 0 or\
+       lcd.is_pressed(LCD.RIGHT) != 0 ):  
+      while (lcd.is_pressed(LCD.UP)    != 0 or\
+             lcd.is_pressed(LCD.DOWN)  != 0 or\
+             lcd.is_pressed(LCD.LEFT)  != 0 or\
+             lcd.is_pressed(LCD.RIGHT) != 0 ):
            sleep(0.05) # break
       return buttons
 
 # Main program
 def main():  
     # Setup AdaFruit LCD Plate    
-   lcd.begin(16,2)  
+   #lcd.begin(16,2)  
    lcd.clear()  
 
    # Create the worker thread and make it a daemon  
@@ -184,7 +184,7 @@ def main():
    #press = read_buttons()
    while (keep_looping):     
       # DOWN button  
-      if(lcd.buttonPressed(lcd.DOWN) == 1):
+      if(lcd.is_pressed(LCD.DOWN) == 1):
          sleep(0.5)  
          item -= 1  
          if(item < 0):  
@@ -192,7 +192,7 @@ def main():
          LCD_QUEUE.put(MENU_LIST[item], True)  
   
       # UP button  
-      elif(lcd.buttonPressed(lcd.UP) == 1):  
+      elif(lcd.is_pressed(LCD.UP) == 1):  
          sleep(0.5)
 	 item += 1  
          if(item >= len(MENU_LIST)):  
@@ -200,7 +200,7 @@ def main():
          LCD_QUEUE.put(MENU_LIST[item], True)  
   
       # SELECT button = exit  
-      elif(lcd.buttonPressed(lcd.SELECT) == 1):  
+      elif(lcd.is_pressed(LCD.SELECT) == 1):  
          keep_looping = False  
   
          # Take action  
@@ -209,10 +209,10 @@ def main():
             lcd.clear()
 	    lcd.message("Swipe RFID tag\n")
 	    lcd.message("ID:waiting")
-	    lcd.setCursor(3,6)
+	    lcd.set_cursor(3,6)
             UID = rfid_ID(Command("nfc-poll").run(timeout=5))
             if (UID != False):
-                lcd.setCursor(3,6)
+                lcd.set_cursor(3,6)
 		lcd.message(UID)
 		sleep(1)
 	        charge(UID, logfile, coffee_price)
@@ -239,10 +239,10 @@ def main():
             lcd.clear()
             lcd.message("Swipe RFID tag\n")
             lcd.message("ID:waiting")
-            lcd.setCursor(3,6)
+            lcd.set_cursor(3,6)
             UID = rfid_ID(Command("nfc-poll").run(timeout=5))
             if (UID != False):
-                lcd.setCursor(3,6)
+                lcd.set_cursor(3,6)
                 lcd.message(UID)
                 sleep(1)
                 charge(UID, logfile, "1.00")
@@ -271,10 +271,10 @@ def main():
             lcd.clear()
             lcd.message("Swipe RFID tag\n")
             lcd.message("ID:waiting")
-            lcd.setCursor(3,6)
+            lcd.set_cursor(3,6)
             UID = rfid_ID(Command("nfc-poll").run(timeout=5))
             if (UID != False):
-                lcd.setCursor(3,6)
+                lcd.set_cursor(3,6)
                 lcd.message(UID)
                 sleep(1)
                 charge(UID, logfile, "2.00")
@@ -302,10 +302,10 @@ def main():
             lcd.clear()
             lcd.message("Swipe RFID tag\n")
             lcd.message("ID:waiting")
-            lcd.setCursor(3,6)
+            lcd.set_cursor(3,6)
             UID = rfid_ID(Command("nfc-poll").run(timeout=5))
             if (UID != False):
-                lcd.setCursor(3,6)
+                lcd.set_cursor(3,6)
                 lcd.message(UID)
                 sleep(1)
                 charge(UID, logfile, "5.00")
@@ -333,10 +333,10 @@ def main():
             lcd.clear()
             lcd.message("Swipe RFID tag\n")
             lcd.message("ID:waiting")
-            lcd.setCursor(3,6)
+            lcd.set_cursor(3,6)
             UID = rfid_ID(Command("nfc-poll").run(timeout=5))
             if (UID != False):
-                lcd.setCursor(3,6)
+                lcd.set_cursor(3,6)
                 lcd.message(UID)
                 sleep(1)
                 charge(UID, logfile, "10.00")
@@ -364,10 +364,10 @@ def main():
             lcd.clear()
             lcd.message("Swipe RFID tag\n")
             lcd.message("ID:waiting")
-            lcd.setCursor(3,6)
+            lcd.set_cursor(3,6)
             UID = rfid_ID(Command("nfc-poll").run(timeout=5))
             if (UID != False):
-                lcd.setCursor(3,6)
+                lcd.set_cursor(3,6)
                 lcd.message(UID)
                 sleep(1)
                 charge(UID, logfile, "20.00")
@@ -395,10 +395,10 @@ def main():
             lcd.clear()
             lcd.message("Swipe RFID tag\n")
             lcd.message("ID:waiting")
-            lcd.setCursor(3,6)
+            lcd.set_cursor(3,6)
             UID = rfid_ID(Command("nfc-poll").run(timeout=5))
             if (UID != False):
-                lcd.setCursor(3,6)
+                lcd.set_cursor(3,6)
                 lcd.message(UID)
                 sleep(1)
                 charge(UID, logfile, "50.00")
