@@ -158,20 +158,7 @@ def update_lcd(q):
       q.task_done()  
    return 
 
-#Debounce buttons
   
-def read_buttons():  
-   if (lcd.is_pressed(LCD.UP)    != 0 or\
-       lcd.is_pressed(LCD.DOWN)  != 0 or\
-       lcd.is_pressed(LCD.LEFT)  != 0 or\
-       lcd.is_pressed(LCD.RIGHT) != 0 ):  
-      while (lcd.is_pressed(LCD.UP)    != 0 or\
-             lcd.is_pressed(LCD.DOWN)  != 0 or\
-             lcd.is_pressed(LCD.LEFT)  != 0 or\
-             lcd.is_pressed(LCD.RIGHT) != 0 ):
-           sleep(0.05) # break
-      return buttons
-
 # Main program
 
 MENU_LIST = [
@@ -185,7 +172,6 @@ MENU_LIST = [
 
 def main():  
     # Setup AdaFruit LCD Plate    
-   #lcd.begin(16,2)  
    lcd.clear()  
 
    # Create the worker thread and make it a daemon  
@@ -198,21 +184,8 @@ def main():
    sleep(2)
    lcd.clear()  
 
-#   MENU_LIST = [  
-#      '1. Pay Coffee \n             ',  
-#      '2. Load Money \n +1.00 \x01  ', #\x0 to interpret created char EUR-symbol as hex   
-#      '3. Load Money \n +2.00 \x01  ',  
-#      '4. Load Money \n +5.00 \x01  ',  
-#      '5. Load Money \n +10.00 \x01  ',  
-#      '6. Load Money \n +20.00 \x01  ',  
-#      '7. Load Money \n +50.00 \x01 ']  
-  
-   item = 0  
-   lcd.clear()
-   LCD_QUEUE.put(MENU_LIST[item], True)  
-  
    keep_looping = True  
-   #press = read_buttons()
+
    while (keep_looping):     
       # DOWN button  
       if(lcd.is_pressed(LCD.DOWN) == 1):
