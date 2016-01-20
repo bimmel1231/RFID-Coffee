@@ -124,7 +124,22 @@ def lcdmenu(poll_time, money): #poll_time in s, money in EUR
          sleep(1.5)
          pass
          
-    
+def lcdmenu_balance(poll_time):
+    lcd.clear()
+    lcd.message("Swipe RFID tag \x02\n")
+    lcd.message("ID:waiting")
+    UID = rfid_ID(Command("nfc-poll").run(timeout=poll_time))
+    lcd.set_cursor(3,6)
+    keep_looping = True
+    while (keep_looping == True):
+         lcd.set_cursor(3,6)
+         lcd.message(UID)  
+         if (lcd.is_pressed(LCD.RIGHT) == 1):
+              keep_looping = False
+              lcd.clear()
+              lcd.message("Balance:\n" + str(acc_balance(UID, logfile)) + " \x01")
+              sleep(2)
+
 #Initialize Coffee logger
 coffee_price = -0.25 # Coffee price in EUR
 path = '/home/pi/RFID-Coffee' #path to directory    
@@ -136,7 +151,8 @@ diffsave = "coffee_diff_savelog.txt"
 
 lcd	       = LCD.Adafruit_CharLCDPlate()
 LCD_QUEUE      = Queue()
-lcd.create_char(1, [3, 4, 30, 8, 30, 9, 7, 0])
+lcd.create_char(1, [3, 4, 30, 8, 30, 9, 7, 0]) # EUR symbol
+lcd.create_char(2, [8, 12, 10, 9, 10, 12, 8, 0]) # arrow right
 
 
 # ----------------------------  
@@ -162,17 +178,20 @@ def update_lcd(q):
 # Main program
 
 MENU_LIST = [
-      '1. Pay Coffee \n             ',
-      '2. Load Money \n +1.00 \x01  ', #\x0 to interpret created char EUR-symbol as hex
-      '3. Load Money \n +2.00 \x01  ',
-      '4. Load Money \n +5.00 \x01  ',
-      '5. Load Money \n +10.00 \x01  ',
-      '6. Load Money \n +20.00 \x01  ',
-      '7. Load Money \n +50.00 \x01 ']
+      '1. Pay Coffee \n -0.25 \x01 ',
+      '2. Load Money \n +1.00 \x01 ', #\x0 to interpret created char EUR-symbol as hex
+      '3. Load Money \n +2.00 \x01 ',
+      '4. Load Money \n +5.00 \x01 ',
+      '5. Load Money \n +10.00 \x01',
+      '6. Load Money \n +20.00 \x01',
+      '7. Load Money \n +50.00 \x01',
+      '8. Check ID and \n account balance']
 
 def main():  
     # Setup AdaFruit LCD Plate    
    lcd.clear()  
+   item = 0
+#   LCD_QUEUE.put(MENU_LIST[item], True)
 
    # Create the worker thread and make it a daemon  
    worker = threading.Thread(target=update_lcd, args=(LCD_QUEUE,))  
@@ -182,14 +201,16 @@ def main():
    # Welcome
    LCD_QUEUE.put('Welcome to IAPPs\nCoffee kitty', True)  
    sleep(2)
-   lcd.clear()  
-
+   lcd.clear()
+   item = 0
+   LCD_QUEUE.put(MENU_LIST[item], True)  
    keep_looping = True  
-
+   
    while (keep_looping):     
       # DOWN button  
       if(lcd.is_pressed(LCD.DOWN) == 1):
-         sleep(0.5)  
+         sleep(0.3)  
+         lcd.clear()
          item -= 1  
          if(item < 0):  
             item = len(MENU_LIST) - 1  
@@ -197,7 +218,8 @@ def main():
   
       # UP button  
       elif(lcd.is_pressed(LCD.UP) == 1):  
-         sleep(0.5)
+         sleep(0.3)
+         lcd.clear()
 	 item += 1  
          if(item >= len(MENU_LIST)):  
             item = 0  
@@ -250,7 +272,11 @@ def main():
             keep_looping = True
             LCD_QUEUE.put(MENU_LIST[item], True)
 
-  
+         elif(item == 7):
+            # 8. Check ID and balance
+            lcdmenu_balance(10)
+            keep_looping = True
+            LCD_QUEUE.put(MENU_LIST[item], True)     
       else:
 	pass  
          #delay_milliseconds(99)
