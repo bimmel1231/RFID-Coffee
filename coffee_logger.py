@@ -52,10 +52,10 @@ class Command(object):
 
 
 #Communication with Adafruit PN532
-def rfid():
-    res = subprocess.Popen("nfc-poll",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-    stdout, stderr = res.communicate()
-    return([stdout, stderr])
+#def rfid():
+#    res = subprocess.Popen("nfc-poll",stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+#    stdout, stderr = res.communicate()
+#    return([stdout, stderr])
 
 #Formatting of the PN532 output
 def rfid_ID(input):
@@ -74,9 +74,12 @@ def saveUID(ID, money, filename):
 
 def acc_balance(ID, filename):
     data = pd.read_csv(filename, delimiter='\t')
-    UIDindizes = data.UID[data.UID == ID].index.tolist() # find indizes with match UID
-    balance =  sum(data.Money[UIDindizes])
-    return balance
+    if any(data.UID.str.contains(ID)):
+    	UIDindizes = data.UID[data.UID == ID].index.tolist() # find indizes with match UID
+    	balance =  sum(data.Money[UIDindizes])
+    	return balance
+    else:
+	return 0.00
 
 def charge(ID, filename, money):
     if ID != False:
@@ -88,16 +91,16 @@ def charge(ID, filename, money):
     else:    
         return False
 
-def diff_balance(ID, filename, money):
-    data = pd.read_csv(filename, delimiter='\t')
-    if any(data.UID.str.contains(ID)):
-        indizes = data.UID[data.UID==ID].index[0]
-        data.iloc[indizes] = [datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"), ID, data.iloc[indizes,3] + money]
-        data.to_csv(filename, sep='\t', index=False)
-    else:
-        frame = pd.DataFrame([[datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"), ID, money]], columns=['Date', 'Time', 'UID', 'Money'])
-        data_new = data.append(frame, ignore_index=True)
-        data_new.to_csv(filename, sep='\t', index=False)  
+#def diff_balance(ID, filename, money):
+#    data = pd.read_csv(filename, delimiter='\t')
+#    if any(data.UID.str.contains(ID)):
+#        indizes = data.UID[data.UID==ID].index[0]
+#        data.iloc[indizes] = [datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"), ID, data.iloc[indizes,3] + money]
+#        data.to_csv(filename, sep='\t', index=False)
+#    else:
+#        frame = pd.DataFrame([[datetime.datetime.now().strftime("%Y-%m-%d"), datetime.datetime.now().strftime("%H:%M:%S"), ID, money]], columns=['Date', 'Time', 'UID', 'Money'])
+#        data_new = data.append(frame, ignore_index=True)
+#        data_new.to_csv(filename, sep='\t', index=False)  
 
 def lcdmenu(poll_time, money): #poll_time in s, money in EUR
     lcd.clear()
@@ -170,7 +173,7 @@ def update_lcd(q):
          msg = q.get()  
       lcd.set_cursor(0,0)  
       lcd.message(msg)
-      sleep(0.2)  
+     # sleep(0.2)  
       q.task_done()  
    return 
 
